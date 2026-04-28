@@ -7,6 +7,7 @@ import {
   Box,
   LayoutDashboard,
   MSquare,
+  QrCodeIcon,
   Settings,
   ShoppingCart,
   Users,
@@ -22,6 +23,7 @@ type SidebarBtnProps = {
 const items = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Products", href: "/products", icon: Box },
+  { label: "QR Generator", href: "/qr", icon: QrCodeIcon },
   { label: "Darts score", href: "/darts-score", icon: MSquare },
   { label: "Orders", href: "/orders", icon: ShoppingCart },
   { label: "Users", href: "/users", icon: Users },
