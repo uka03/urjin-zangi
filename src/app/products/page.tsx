@@ -1,26 +1,26 @@
 "use client";
 import { ProductsApi } from "@/lib/api/product.api";
 import { Product } from "@/types/product.type";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function ProductsPage() {
   const [items, setItems] = useState<Product[]>([]);
-  const [total, setTotal] = useState(0);
-
-  async function load() {
-    const res = await ProductsApi.listPaged({ page: 1, limit: 20 });
-
-    if (res.success) {
-      setItems(res.data.items);
-      setTotal(res.data.meta.total);
-    }
-  }
 
   useEffect(() => {
-    load();
+    let ignore = false;
+
+    ProductsApi.listPaged({ page: 1, limit: 20 }).then((res) => {
+      if (!ignore && res.success) {
+        setItems(res.data.items);
+      }
+    });
+
+    return () => {
+      ignore = true;
+    };
   }, []);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between">

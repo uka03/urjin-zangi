@@ -5,11 +5,13 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Box,
+  Download,
   LayoutDashboard,
   MSquare,
   QrCodeIcon,
   Settings,
   ShoppingCart,
+  Upload,
   Users,
 } from "lucide-react";
 
@@ -23,6 +25,8 @@ type SidebarBtnProps = {
 const items = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Products", href: "/products", icon: Box },
+  { label: "Upload Files", href: "/files/upload", icon: Upload },
+  { label: "Download Files", href: "/files/download", icon: Download },
   { label: "QR Generator", href: "/qr", icon: QrCodeIcon },
   { label: "Darts score", href: "/darts-score", icon: MSquare },
   { label: "Orders", href: "/orders", icon: ShoppingCart },

@@ -28,7 +28,7 @@ export async function api<T>(path: string, init: RequestInit = {}) {
   return (await res.json()) as T;
 }
 
-export function qs(params: Record<string, any>) {
+export function qs(params: Record<string, unknown>) {
   const s = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {
     if (v === undefined || v === null || v === "") return;

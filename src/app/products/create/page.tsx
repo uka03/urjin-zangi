@@ -36,7 +36,7 @@ function parseApiError(err: unknown): string {
   if (err instanceof Error) return err.message;
 
   if (typeof err === "object" && err !== null) {
-    const anyErr = err as any;
+    const anyErr = err as Record<string, unknown>;
 
     // fetch wrapper error
     if (typeof anyErr?.message === "string") return anyErr.message;
