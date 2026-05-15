@@ -26,6 +26,32 @@ function parseError(err: unknown) {
   return err instanceof Error ? err.message : "Файл хуулахад алдаа гарлаа";
 }
 
+function createId(prefix: string) {
+  const value =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  return `${prefix}-${value}`;
+}
+
+function getDeviceId() {
+  const key = "urjin-upload-device-id";
+  const existing = localStorage.getItem(key);
+
+  if (existing) return existing;
+
+  const next = createId("device");
+  localStorage.setItem(key, next);
+
+  return next;
+}
+
+function getDeviceName(deviceId: string) {
+  const shortId = deviceId.split("-").pop()?.slice(0, 6) || "local";
+  return `Device ${shortId}`;
+}
+
 export default function UploadFilesPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [selected, setSelected] = useState<File[]>([]);
@@ -75,6 +101,10 @@ export default function UploadFilesPage() {
 
       const results: UploadedFile[] = [];
       let uploadedBytes = 0;
+      const deviceId = getDeviceId();
+      const batchId = createId("batch");
+      const deviceName = getDeviceName(deviceId);
+
       for (const file of selected) {
         setActiveName(file.name);
         setActiveLoadedBytes(0);
@@ -82,6 +112,11 @@ export default function UploadFilesPage() {
           file,
           ({ loaded }) => {
             setActiveLoadedBytes(loaded);
+          },
+          {
+            deviceId,
+            deviceName,
+            batchId,
           },
         );
         results.push(response.data);

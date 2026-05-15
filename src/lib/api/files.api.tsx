@@ -10,6 +10,20 @@ export type UploadedFile = {
   uploadedAt?: string;
   expiresAt: string;
   ttlSeconds: number;
+  deviceId?: string;
+  deviceName?: string;
+  batchId?: string;
+};
+
+export type DownloadFileEntry = {
+  key: string;
+  fileName?: string;
+};
+
+export type UploadMetadata = {
+  deviceId?: string;
+  deviceName?: string;
+  batchId?: string;
 };
 
 export const FilesApi = {
@@ -37,6 +51,36 @@ export const FilesApi = {
     return {
       blob,
       fileName: getFileNameFromDisposition(disposition) ?? key.split("/").pop() ?? "download",
+    };
+  },
+
+  async downloadZip(files: DownloadFileEntry[]) {
+    const res = await fetch(`${BASE}/files/download`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ files }),
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      let msg = `Download failed: ${res.status}`;
+      try {
+        const data = await res.json();
+        msg = data.message || data.error || msg;
+      } catch {}
+      throw new Error(msg);
+    }
+
+    const disposition = res.headers.get("content-disposition") ?? "";
+    const blob = await res.blob();
+
+    return {
+      blob,
+      fileName:
+        getFileNameFromDisposition(disposition) ??
+        `uploaded-files-${new Date().toISOString().slice(0, 10)}.zip`,
     };
   },
 
@@ -75,9 +119,10 @@ export const FilesApi = {
     return (await res.json()) as ApiResponse<{ key: string }>;
   },
 
-  async upload(file: File) {
+  async upload(file: File, metadata: UploadMetadata = {}) {
     const body = new FormData();
     body.set("file", file);
+    appendUploadMetadata(body, metadata);
     console.log("Uploading file:", file.name, file.size);
     console.log(`${BASE}/files`);
 
@@ -102,9 +147,11 @@ export const FilesApi = {
   uploadWithProgress(
     file: File,
     onProgress: (progress: { loaded: number; total: number }) => void,
+    metadata: UploadMetadata = {},
   ) {
     const body = new FormData();
     body.set("file", file);
+    appendUploadMetadata(body, metadata);
 
     return new Promise<ApiResponse<UploadedFile>>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
@@ -139,6 +186,12 @@ export const FilesApi = {
     });
   },
 };
+
+function appendUploadMetadata(body: FormData, metadata: UploadMetadata) {
+  if (metadata.deviceId) body.set("deviceId", metadata.deviceId);
+  if (metadata.deviceName) body.set("deviceName", metadata.deviceName);
+  if (metadata.batchId) body.set("batchId", metadata.batchId);
+}
 
 function getFileNameFromDisposition(disposition: string) {
   const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i);
